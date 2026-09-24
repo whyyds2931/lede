@@ -72,20 +72,17 @@ jobs:
 
       - name: Generate configuration file
         run: |
-          make defconfig
-          # 指定目标平台: ramips / mt7621
-          ./scripts/config --set CONFIG_TARGET_ramips y
-          ./scripts/config --set CONFIG_TARGET_ramips_mt7621 y
-          # 指定设备: Qihoo 360 T6GS
-          ./scripts/config --set CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_qihoo_360t6gs y
-          # 开启 UA3F
-          ./scripts/config --set CONFIG_PACKAGE_ua3f y
-          # 开启 minieap（深澜/校园网认证客户端）
-          ./scripts/config --set CONFIG_PACKAGE_minieap y
-          ./scripts/config --set CONFIG_PACKAGE_luci-app-minieap y
-          # 开启 BBR 拥塞控制模块
-          ./scripts/config --set CONFIG_PACKAGE_kmod-tcp-bbr y
-          # 重新生成配置
+          # 直接写入基础配置（目标设备 + 所需软件包）
+          cat > .config << 'EOF'
+          CONFIG_TARGET_ramips=y
+          CONFIG_TARGET_ramips_mt7621=y
+          CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_qihoo_360t6gs=y
+          CONFIG_PACKAGE_ua3f=y
+          CONFIG_PACKAGE_minieap=y
+          CONFIG_PACKAGE_luci-app-minieap=y
+          CONFIG_PACKAGE_kmod-tcp-bbr=y
+          EOF
+          # make defconfig 自动展开所有依赖
           make defconfig
           # 验证配置
           echo "=== Target & Device ==="
