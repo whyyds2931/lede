@@ -2085,6 +2085,9 @@ TARGET_DEVICES += zte_e8820s
 define Device/qihoo_360t6gs
   $(Device/nand)
   $(Device/uimage-lzma-loader)
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  UBINIZE_OPTS := -E 5
   DEVICE_VENDOR := Qihoo
   DEVICE_MODEL := 360 T6GS
   IMAGE_SIZE := 125000k
