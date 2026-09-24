@@ -46,16 +46,24 @@ jobs:
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
         with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
           tool-cache: true
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
           android: true
           dotnet: true
           haskell: true
           large-packages: true
           swap-storage: true
+
+      - name: Add custom packages
+        run: |
+          # 添加第三方软件源（含 minieap 深澜认证等）
+          echo "src-git kenzo https://github.com/kenzok8/openwrt-packages" >> feeds.conf.default
+          echo "src-git small https://github.com/kenzok8/small" >> feeds.conf.default
+          # UA3F - 校园网 UA 伪装
+          git clone --depth 1 https://github.com/SunBK201/UA3F.git package/UA3F
+          # 列出添加的包
+          echo "=== Custom packages added ==="
+          ls -la package/UA3F/
+          cat feeds.conf.default
 
       - name: Update feeds
         run: |
@@ -64,7 +72,30 @@ jobs:
           ./scripts/feeds install -a
 
       - name: Generate configuration file
-        run: make defconfig
+        run: |
+          make defconfig
+          # 开启 UA3F
+          ./scripts/config --set CONFIG_PACKAGE_ua3f y
+          # 开启 minieap（深澜/校园网认证客户端）
+          ./scripts/config --set CONFIG_PACKAGE_minieap y
+          ./scripts/config --set CONFIG_PACKAGE_luci-app-minieap y
+          # 开启 BBR 拥塞控制模块
+          ./scripts/config --set CONFIG_PACKAGE_kmod-tcp-bbr y
+          # 重新生成配置
+          make defconfig
+          # 验证配置
+          echo "=== Selected packages ==="
+          grep -E "CONFIG_PACKAGE_(ua3f|minieap|kmod-tcp-bbr)" .config || true
+
+      - name: Add BBR sysctl config
+        run: |
+          mkdir -p files/etc/sysctl.d
+          cat > files/etc/sysctl.d/99-bbr.conf << 'EOF'
+          net.core.default_qdisc=fq
+          net.ipv4.tcp_congestion_control=bbr
+          EOF
+          echo "BBR sysctl config created:"
+          cat files/etc/sysctl.d/99-bbr.conf
 
       - name: Download packages
         run: make download -j16
