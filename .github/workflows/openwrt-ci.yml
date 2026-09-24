@@ -60,7 +60,6 @@ jobs:
           echo "src-git small https://github.com/kenzok8/small" >> feeds.conf.default
           # UA3F - 校园网 UA 伪装
           git clone --depth 1 https://github.com/SunBK201/UA3F.git package/UA3F
-          # 列出添加的包
           echo "=== Custom packages added ==="
           ls -la package/UA3F/
           cat feeds.conf.default
@@ -74,6 +73,11 @@ jobs:
       - name: Generate configuration file
         run: |
           make defconfig
+          # 指定目标平台: ramips / mt7621
+          ./scripts/config --set CONFIG_TARGET_ramips y
+          ./scripts/config --set CONFIG_TARGET_ramips_mt7621 y
+          # 指定设备: Qihoo 360 T6GS
+          ./scripts/config --set CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_qihoo_360t6gs y
           # 开启 UA3F
           ./scripts/config --set CONFIG_PACKAGE_ua3f y
           # 开启 minieap（深澜/校园网认证客户端）
@@ -84,6 +88,8 @@ jobs:
           # 重新生成配置
           make defconfig
           # 验证配置
+          echo "=== Target & Device ==="
+          grep -E "CONFIG_TARGET_(ramips|DEVICE)" .config | head -10
           echo "=== Selected packages ==="
           grep -E "CONFIG_PACKAGE_(ua3f|minieap|kmod-tcp-bbr)" .config || true
 
@@ -94,7 +100,6 @@ jobs:
           net.core.default_qdisc=fq
           net.ipv4.tcp_congestion_control=bbr
           EOF
-          echo "BBR sysctl config created:"
           cat files/etc/sysctl.d/99-bbr.conf
 
       - name: Download packages
