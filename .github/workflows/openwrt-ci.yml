@@ -76,7 +76,7 @@ jobs:
           cat > .config << 'EOF'
           CONFIG_TARGET_ramips=y
           CONFIG_TARGET_ramips_mt7621=y
-          CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_qihoo_360t6gs=y
+          CONFIG_TARGET_ramips_mt7621_DEVICE_qihoo_360t6gs=y
           CONFIG_PACKAGE_ua3f=y
           CONFIG_PACKAGE_minieap=y
           CONFIG_PACKAGE_luci-app-minieap=y
@@ -86,7 +86,7 @@ jobs:
           make defconfig
           # 验证配置
           echo "=== Target & Device ==="
-          grep -E "CONFIG_TARGET_(ramips|DEVICE)" .config | head -10
+          grep -E "CONFIG_TARGET_ramips|DEVICE_.*=y" .config | head -10
           echo "=== Selected packages ==="
           grep -E "CONFIG_PACKAGE_(ua3f|minieap|kmod-tcp-bbr)" .config || true
 
